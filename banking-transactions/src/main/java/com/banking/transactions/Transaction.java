@@ -43,6 +43,7 @@ public class Transaction {
 	@PrePersist
 	void createdat() {
 		this.createdat = new Date();
+		this.updatedat = new Date();
 	}
 
 	@PreUpdate

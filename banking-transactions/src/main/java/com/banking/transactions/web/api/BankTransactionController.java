@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -56,6 +57,25 @@ public class BankTransactionController {
 			transactionRepo.deleteById(transactionId);
 		} catch (EmptyResultDataAccessException e) {
 		}
+	}
+
+	@PatchMapping(path = "/{transactionId}", consumes = "application/json")
+	public Transaction patchTransaction(@PathVariable("transactionId") Long transactionId,
+			@RequestBody Transaction patch) {
+
+		Transaction transaction = transactionRepo.findById(transactionId).get();
+
+		if (patch.getCurrency() != null) {
+			transaction.setCurrency(patch.getCurrency());
+		}
+		if (patch.getAmount() != null) {
+			transaction.setAmount(patch.getAmount());
+		}
+		if (patch.getSourceaccountid() != null) {
+			transaction.setSourceaccountid(patch.getSourceaccountid());
+		}
+
+		return transactionRepo.save(transaction);
 	}
 
 }
