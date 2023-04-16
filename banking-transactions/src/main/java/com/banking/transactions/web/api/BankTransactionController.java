@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +28,10 @@ import com.banking.transactions.data.TransactionRepository;
 @RequestMapping(path = "/transactions", produces = "application/json")
 public class BankTransactionController {
 
-//	@Autowired
+	Logger logger = LoggerFactory.getLogger(BankTransactionController.class);
+
+	private static final String LOG_PREFIX = "BankTransactionController";
+
 	private TransactionRepository transactionRepo;
 
 	public BankTransactionController(TransactionRepository transactionRepository) {
@@ -35,17 +40,30 @@ public class BankTransactionController {
 
 	@GetMapping
 	public List<Transaction> getAllTransactions() {
-		return transactionRepo.findAll();
+		List<Transaction> transactionsList = transactionRepo.findAll();
+		logger.info(LOG_PREFIX + ".getAllTransactions | All transactions available : {}", transactionsList.toString());
+		return transactionsList;
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<Transaction> getTransactionById(@PathVariable Long id) {
+
+		logger.info(LOG_PREFIX + ".getTransactionById | Fetching transaction with ID : {}", id);
 		Optional<Transaction> transaction = transactionRepo.findById(id);
+		if (transaction.isPresent()) {
+			logger.info(LOG_PREFIX + ".getTransactionById | Transaction with ID : {} found : {}", id,
+					transaction.get().toString());
+		} else {
+			logger.info(LOG_PREFIX + ".getTransactionById | Transaction NOT found with ID : {}", id);
+		}
+
 		return transaction.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
 	}
 
 	@PostMapping
 	public ResponseEntity<Transaction> createTransaction(@Valid @RequestBody Transaction transaction) {
+
+		logger.info(LOG_PREFIX + ".createTransaction | Creating new transaction : {}", transaction.toString());
 		Transaction savedTransaction = transactionRepo.save(transaction);
 		return ResponseEntity.created(URI.create("/transactions/" + savedTransaction.getId())).body(savedTransaction);
 	}
@@ -54,8 +72,12 @@ public class BankTransactionController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteTransaction(@PathVariable("transactionId") Long transactionId) {
 		try {
+			logger.info(LOG_PREFIX + ".deleteTransaction | Deleting transaction with ID: {}", transactionId);
 			transactionRepo.deleteById(transactionId);
 		} catch (EmptyResultDataAccessException e) {
+//			logger.error(LOG_PREFIX
+//					+ ".deleteTransaction | Deleting transaction with ID: {}, EmptyResultDataAccessException : ",
+//					transactionId);
 		}
 	}
 
@@ -64,6 +86,8 @@ public class BankTransactionController {
 			@RequestBody Transaction patch) {
 
 		Transaction transaction = transactionRepo.findById(transactionId).get();
+
+		logger.info(LOG_PREFIX + ".patchTransaction | Updating transaction : {}", transaction.toString());
 
 		if (patch.getCurrency() != null) {
 			transaction.setCurrency(patch.getCurrency());
