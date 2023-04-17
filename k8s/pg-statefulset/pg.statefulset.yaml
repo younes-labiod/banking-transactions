@@ -14,7 +14,7 @@ spec:
         app: postgres
     spec:
       containers:
-      - name: bank-postgres 
+      - name: postgres 
         image: youneslabiod/bank-postgres
         volumeMounts:
         - name: postgres-data
@@ -26,12 +26,10 @@ spec:
         - name: postgres
           containerPort: 5432
         env:
-        - name: POSTGRES_DB #TODO
-          value: mydb #TODO
-        - name: POSTGRES_USER #TODO
-          value: postgres #TODO
-        - name: POSTGRES_PASSWORD #TODO
-          value: mysecretpassword #TODO
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: mysecretpassword
       volumes:
       - name: postgres-data
         persistentVolumeClaim:
