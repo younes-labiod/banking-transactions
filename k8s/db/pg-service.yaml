@@ -8,3 +8,6 @@ spec:
   ports:
     - name: postgres
       port: 5432
+      targetPort: 5432
+
+# kubectl port-forward service/postgres 5432:5432
