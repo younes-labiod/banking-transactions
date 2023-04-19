@@ -5,7 +5,9 @@ metadata:
   labels:
     app: banking-transaction-app
 spec:
-  replicas: 1
+  replicas: 2
+  minReadySeconds: 10 #should be ready in 10 s (as per my last test)
+  progressDeadlineSeconds: 60 #before reporting stalled deployment
   selector:
     matchLabels:
       app: banking-transaction-app
@@ -36,10 +38,29 @@ spec:
             #value: mysecretpassword
         ports:
         - containerPort: 8080
-        resources:
-          limits:
-            memory: "512Mi" #128 MB
-            cpu: "200m" #200 millicpu (.2 cpu or 20% of the cpu)
+        #resources:
+        #  limits:
+        #    memory: "512Mi" #128 MB
+        #    cpu: "200m" #200 millicpu (.2 cpu or 20% of the cpu)
+        
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          #successThreshold: 1
+          failureThreshold: 2
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          #successThreshold: 1
+          failureThreshold: 3
 
 
 # kubectl create secret generic postgres-credentials --from-literal=username=postgres --from-literal=password=mysecretpassword
